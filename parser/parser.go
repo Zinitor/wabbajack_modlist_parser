@@ -56,28 +56,8 @@ func ParseJsonToModlistSummary(jsonData []byte) []ModlistSummary {
 
 }
 
-func GetModlistSummary() []ModlistSummary {
-	modlistSummaryLink := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json"
-	response, err := http.Get(modlistSummaryLink)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != http.StatusOK {
-		log.Fatalf("API request failed with status: %d", response.StatusCode)
-	}
-
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return ParseJsonToModlistSummary(body)
-}
-
 func CreateUrlLinksForApiCall() []string {
-	modlists := GetModlistSummary()
+	modlists := ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json", ParseJsonToModlistSummary)
 	urlPrefix := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/"
 	urlPostfix := "/status.json"
 
@@ -129,7 +109,7 @@ func GetModsCountAcrossModpacks(apiUrls []string) map[string]int {
 func ParseMultipleApi(apiUrls []string) []BaseModlist {
 	modlists := make([]BaseModlist, 0, len(apiUrls))
 	for _, url := range apiUrls {
-		modlists = append(modlists, ParseJsonFromApiURL(url))
+		modlists = append(modlists, ParseJsonFromApiURL(url, ParseJSONToBaseModlist))
 	}
 	return modlists
 }
@@ -142,7 +122,7 @@ func ParseMultipleApiConcurrent(apiUrls []string) []BaseModlist {
 		u := url // ← затеняем значение переменной цикла чтобы все вызовы получили нужное значение,
 		// иначе они потенциально все могут получить последнее значение в range
 		wg.Go(func() {
-			modlistsChan <- ParseJsonFromApiURL(u)
+			modlistsChan <- ParseJsonFromApiURL(u, ParseJSONToBaseModlist)
 		})
 	}
 	go func() {
@@ -158,7 +138,7 @@ func ParseMultipleApiConcurrent(apiUrls []string) []BaseModlist {
 	return modlists
 }
 
-func ParseJsonFromApiURL(apiUrl string) BaseModlist {
+func ParseJsonFromApiURL[T any](apiUrl string, parseTo func(jsonData []byte) T) T {
 	response, err := http.Get(apiUrl)
 	if err != nil {
 		log.Fatal(err)
@@ -174,7 +154,11 @@ func ParseJsonFromApiURL(apiUrl string) BaseModlist {
 		log.Fatal(err)
 	}
 
-	return ParseJSONToBaseModlist(body)
+	return parseTo(body)
+}
+
+func CreateModPackMap([]string) {
+
 }
 
 func ParseJsonFromFile(filename string) BaseModlist {

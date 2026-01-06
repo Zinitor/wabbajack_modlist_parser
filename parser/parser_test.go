@@ -15,7 +15,7 @@ var ApiUrls []string = []string{
 }
 
 func TestCompareParseFromApiAndFile(t *testing.T) {
-	apiArchiveSumSize := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/Geborgen/nordic-souls/status.json")
+	apiArchiveSumSize := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/Geborgen/nordic-souls/status.json", parser.ParseJSONToBaseModlist)
 	localArchiveSumSize := parser.ParseJsonFromFile("archiveData.json")
 	assert.Equal(t, apiArchiveSumSize, localArchiveSumSize)
 }
@@ -43,15 +43,20 @@ func TestCreateUrlLinksForApiCall(t *testing.T) {
 	assert.NotNil(t, urlLinks)
 }
 
-func TestStoreModpacksBasedOnGame(t *testing.T) {
-	urlLinks := parser.CreateUrlLinksForApiCall()
-
-	gameModpackMap := make(map[string]string, len(urlLinks))
-	gameModpackMap = parser.CreateModPackMap(urlLinks)
-
-	assert.NotNil(t, urlLinks)
-
+func TestGetModlistSummary(t *testing.T) {
+	modlistSummaryUsingGeneric := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json", parser.ParseJsonToModlistSummary)
+	assert.NotEmpty(t, modlistSummaryUsingGeneric)
 }
+
+// func TestStoreModpacksBasedOnGame(t *testing.T) {
+// 	urlLinks := parser.CreateUrlLinksForApiCall()
+
+// 	gameModpackMap := make(map[string]string, len(urlLinks))
+// 	gameModpackMap = parser.CreateModPackMap(urlLinks)
+
+// 	assert.NotNil(t, urlLinks)
+
+// }
 
 // func BenchmarkParse(b *testing.B) {
 // 	for b.Loop() {
