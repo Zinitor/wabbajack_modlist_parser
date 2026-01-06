@@ -1,7 +1,6 @@
 package parser_test
 
 import (
-	"fmt"
 	"testing"
 
 	"wabbajackModlistParser/parser"
@@ -31,16 +30,27 @@ func TestParseMultipleApiConurrent(t *testing.T) {
 	assert.NotEmpty(t, apiArchiveSumSize)
 }
 
-func TestCountEachModAppearanceInMultipleModpacks(t *testing.T) {
-	// each of these modpacks has the Book Covers Skyrim
-	// so if the total count for the mod Book Covers Skyrim is 3 then this this is working correctly
+func TestGetModsCountAcrossModpacks(t *testing.T) {
+	// we cannot reasonably set a specific quantity a certain mod should appear cause  modlists change
 	modsCountMap := parser.GetModsCountAcrossModpacks(ApiUrls)
-	if assert.Contains(t, modsCountMap, "Book Covers Skyrim") {
-		assert.Equal(t, 3, modsCountMap["Book Covers Skyrim"], "Value for key 'Book Covers Skyrim' should be 3")
-	}
+	assert.Contains(t, modsCountMap, "Book Covers Skyrim")
+}
 
-	all := parser.GetTopPopularMods(ApiUrls, 10)
-	fmt.Printf("all: %v\n", all)
+func TestCreateUrlLinksForApiCall(t *testing.T) {
+	// this creates url links but it doesn't give us the actual game for which modpack it is
+	urlLinks := parser.CreateUrlLinksForApiCall()
+
+	assert.NotNil(t, urlLinks)
+}
+
+func TestStoreModpacksBasedOnGame(t *testing.T) {
+	urlLinks := parser.CreateUrlLinksForApiCall()
+
+	gameModpackMap := make(map[string]string, len(urlLinks))
+	gameModpackMap = parser.CreateModPackMap(urlLinks)
+
+	assert.NotNil(t, urlLinks)
+
 }
 
 // func BenchmarkParse(b *testing.B) {

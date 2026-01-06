@@ -40,6 +40,57 @@ type ModPopularity struct {
 	Count int
 }
 
+type ModlistSummary struct {
+	ModlistName string `json:"Name"`
+	MachineUrl  string `json:"MachineUrl"`
+}
+
+func ParseJsonToModlistSummary(jsonData []byte) []ModlistSummary {
+	var parsedData []ModlistSummary
+	err := json.Unmarshal(jsonData, &parsedData)
+	if err != nil {
+		slog.Error("unmarshal err", slog.Any("err", err))
+	}
+
+	return parsedData
+
+}
+
+func GetModlistSummary() []ModlistSummary {
+	modlistSummaryLink := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json"
+	response, err := http.Get(modlistSummaryLink)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		log.Fatalf("API request failed with status: %d", response.StatusCode)
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return ParseJsonToModlistSummary(body)
+}
+
+func CreateUrlLinksForApiCall() []string {
+	modlists := GetModlistSummary()
+	urlPrefix := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/"
+	urlPostfix := "/status.json"
+
+	urlLinks := make([]string, 0, len(modlists))
+
+	for _, modpack := range modlists {
+		archiveSearchString := urlPrefix + modpack.MachineUrl + urlPostfix
+		urlLinks = append(urlLinks, archiveSearchString)
+
+	}
+	return urlLinks
+}
+
 func GetTopPopularMods(apiUrls []string, n int) []ModPopularity {
 	counts := GetModsCountAcrossModpacks(apiUrls)
 
@@ -123,7 +174,7 @@ func ParseJsonFromApiURL(apiUrl string) BaseModlist {
 		log.Fatal(err)
 	}
 
-	return ParseJSON(body)
+	return ParseJSONToBaseModlist(body)
 }
 
 func ParseJsonFromFile(filename string) BaseModlist {
@@ -131,10 +182,10 @@ func ParseJsonFromFile(filename string) BaseModlist {
 	if err != nil {
 		slog.Error("read file err", slog.Any("err", err))
 	}
-	return ParseJSON(rawData)
+	return ParseJSONToBaseModlist(rawData)
 }
 
-func ParseJSON(jsonData []byte) BaseModlist {
+func ParseJSONToBaseModlist(jsonData []byte) BaseModlist {
 	var parsedData BaseModlist
 	err := json.Unmarshal(jsonData, &parsedData)
 	if err != nil {
