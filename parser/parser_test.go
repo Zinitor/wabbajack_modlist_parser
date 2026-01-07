@@ -1,6 +1,7 @@
 package parser_test
 
 import (
+	"fmt"
 	"testing"
 
 	"wabbajackModlistParser/parser"
@@ -51,12 +52,19 @@ func TestGetModlistSummary(t *testing.T) {
 // func TestStoreModpacksBasedOnGame(t *testing.T) {
 // 	urlLinks := parser.CreateUrlLinksForApiCall()
 
-// 	gameModpackMap := make(map[string]string, len(urlLinks))
-// 	gameModpackMap = parser.CreateModPackMap(urlLinks)
+// 	gameModpackMap := parser.CreateModPackMap(urlLinks)
 
-// 	assert.NotNil(t, urlLinks)
+// 	fmt.Printf("gameModpackMap: %v\n", gameModpackMap)
+
+// 	// assert.NotNil(t, urlLinks)
 
 // }
+
+func TestParseJsonToModlistInfo(t *testing.T) {
+	modlistInfo := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/tpartridge89/ElderTeej/main/modlists.json", parser.ParseJSONToModlistInfo)
+	assert.NotEmpty(t, modlistInfo)
+	fmt.Printf("modlistInfo: %v\n", modlistInfo)
+}
 
 // func BenchmarkParse(b *testing.B) {
 // 	for b.Loop() {

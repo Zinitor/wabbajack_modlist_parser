@@ -3,6 +3,7 @@ package parser
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"log/slog"
@@ -11,6 +12,12 @@ import (
 	"sort"
 	"sync"
 )
+
+//TODO
+// 1. Разобраться с логгерами
+// 2. Вынести трансформеры в отдельную подпапку вместе с структурой в которую они приводят
+// 3. Разобраться с юрлками
+// 4. Написать мейн
 
 type State struct {
 	Name    string `json:"Name"`
@@ -43,6 +50,13 @@ type ModPopularity struct {
 type ModlistSummary struct {
 	ModlistName string `json:"Name"`
 	MachineUrl  string `json:"MachineUrl"`
+}
+
+type ModlistInfo struct {
+	//потом можно сделать статистику какие моды чаще всего используются в определенных типах модпаков
+	Game   string   `json:"game"`
+	Tags   []string `json:"tags"`
+	IsNSFW bool     `json:"nsfw"`
 }
 
 func ParseJsonToModlistSummary(jsonData []byte) []ModlistSummary {
@@ -106,6 +120,7 @@ func GetModsCountAcrossModpacks(apiUrls []string) map[string]int {
 	return ModsCountMap
 }
 
+// Todo возможно тут тоже можно переписать с дженериком
 func ParseMultipleApi(apiUrls []string) []BaseModlist {
 	modlists := make([]BaseModlist, 0, len(apiUrls))
 	for _, url := range apiUrls {
@@ -157,8 +172,34 @@ func ParseJsonFromApiURL[T any](apiUrl string, parseTo func(jsonData []byte) T) 
 	return parseTo(body)
 }
 
-func CreateModPackMap([]string) {
+func CreateModPackMap(apiUrls []string) map[string][]string {
+	//нам приходит срез строк вызовов апи
+	// это ссылки на файл вида modlist.json
+	// нужно сделать вызов каждой этой ссылки
+	// и из структуры раскидать каждую из представленных ссылок к игре к которой она относится
+	// modlistsInfo := make([]ModlistInfo, 0, len(apiUrls))
+	gameModlistMap := make(map[string][]string, len(apiUrls))
 
+	fmt.Printf("len(apiUrls): %v\n", len(apiUrls))
+
+	//тупая версия
+	for idx, url := range apiUrls {
+		info := ParseJsonFromApiURL(url, ParseJSONToModlistInfo)
+		for _, linkInfo := range info {
+			gameModlistMap[linkInfo.Game] = append(gameModlistMap[linkInfo.Game], url)
+
+		}
+		fmt.Printf("gameModpackMap: %v\n", idx)
+
+	}
+
+	//конкурентная версия
+	//
+
+	// for _, mInfo := range modlistsInfo {
+	// if gameModlistMap[mInfo.Game]
+	// }
+	return gameModlistMap
 }
 
 func ParseJsonFromFile(filename string) BaseModlist {
@@ -182,3 +223,19 @@ func ParseJSONToBaseModlist(jsonData []byte) BaseModlist {
 	}
 	return parsedData
 }
+
+func ParseJSONToModlistInfo(jsonData []byte) []ModlistInfo {
+	var parsedData []ModlistInfo
+	err := json.Unmarshal(jsonData, &parsedData)
+	if err != nil {
+		slog.Error("unmarshal err", slog.Any("err", err))
+	}
+
+	return parsedData
+
+}
+
+// Забрать repositories.json,
+// Пробежаться по каждой из представленных ссылок
+// При парсинге оставлять только те где game == переменная
+// Так собираем только модпаки для нужной игры а дальше уже разберемся как получать данные архивов
