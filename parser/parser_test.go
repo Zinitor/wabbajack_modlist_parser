@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"wabbajackModlistParser/parser"
+	"wabbajackModlistParser/parser/structs"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -16,8 +17,8 @@ var ApiUrls []string = []string{
 }
 
 func TestCompareParseFromApiAndFile(t *testing.T) {
-	apiArchiveSumSize := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/Geborgen/nordic-souls/status.json", parser.ParseJSONToBaseModlist)
-	localArchiveSumSize := parser.ParseJsonFromFile("archiveData.json")
+	apiArchiveSumSize := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/Geborgen/nordic-souls/status.json", structs.ParseToBaseModlist)
+	localArchiveSumSize := structs.ParseFromFile("archiveData.json")
 	assert.Equal(t, apiArchiveSumSize, localArchiveSumSize)
 }
 
@@ -45,7 +46,7 @@ func TestCreateUrlLinksForApiCall(t *testing.T) {
 }
 
 func TestGetModlistSummary(t *testing.T) {
-	modlistSummaryUsingGeneric := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json", parser.ParseJsonToModlistSummary)
+	modlistSummaryUsingGeneric := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json", structs.ParseToModlistSummary)
 	assert.NotEmpty(t, modlistSummaryUsingGeneric)
 }
 
@@ -61,13 +62,25 @@ func TestGetModlistSummary(t *testing.T) {
 // }
 
 func TestParseJsonToModlistInfo(t *testing.T) {
-	modlistInfo := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/tpartridge89/ElderTeej/main/modlists.json", parser.ParseJSONToModlistInfo)
+	modlistInfo := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/tpartridge89/ElderTeej/main/modlists.json", structs.ParseToModlistInfo)
 	assert.NotEmpty(t, modlistInfo)
 	fmt.Printf("modlistInfo: %v\n", modlistInfo)
 }
 
-// func BenchmarkParse(b *testing.B) {
-// 	for b.Loop() {
-// 		_ = parser.ParseJSON()
-// 	}
-// }
+func TestParseRepositories(t *testing.T) {
+	repositories := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/repositories.json", structs.ParseToRepos)
+	assert.NotEmpty(t, repositories)
+}
+
+func TestParseModlistsFromRepositoryLinks(t *testing.T) {
+	repositories := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/repositories.json", structs.ParseToRepos)
+
+	includeGames := []string{"skyrimspecialedition", "fallout4"}
+	gameModlistMap := parser.CreateModPackMap(repositories, includeGames)
+
+	for _, game := range includeGames {
+		assert.Contains(t, gameModlistMap, game, "Expected gameModlistMap to contain modlist for %s", game)
+	}
+
+	fmt.Printf("gameModlistMap: %v\n", gameModlistMap)
+}
