@@ -87,10 +87,11 @@ func TestParseModlistsFromRepositoryLinks(t *testing.T) {
 }
 
 func TestGetModpackArchives(t *testing.T) {
+	modlistSummary := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json", structs.ParseToModlistSummary)
 
 	modpackTitle := "Skyrim Modding Essentials"
 
-	archives := parser.GetModpackArchives(modpackTitle)
+	archives := parser.GetModpackArchives(modlistSummary, modpackTitle)
 
 	fmt.Printf("archives: %v\n", archives)
 
@@ -102,5 +103,4 @@ func TestGetAllGameModpackArchives(t *testing.T) {
 	includeGames := []string{"skyrimspecialedition", "fallout4"}
 
 	parser.GetAllGameModpackArchives(includeGames)
-
 }

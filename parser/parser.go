@@ -2,7 +2,6 @@
 package parser
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -147,8 +146,7 @@ func CreateGameModlistTitleMap(apiUrls []structs.Repository, includedGameKeyName
 	return gameModlistTitleMap
 }
 
-func GetModpackArchives(modpackTitle string) structs.BaseModlist {
-	modlistSummary := ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json", structs.ParseToModlistSummary)
+func GetModpackArchives(modlistSummary []structs.ModlistSummary, modpackTitle string) structs.BaseModlist {
 	var urlLink string
 	for _, objModlist := range modlistSummary {
 		if objModlist.ModlistName != modpackTitle {
@@ -164,6 +162,7 @@ func GetModpackArchives(modpackTitle string) structs.BaseModlist {
 
 func GetAllGameModpackArchives(gameNames []string) {
 	repositories := ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/repositories.json", structs.ParseToRepos)
+	modlistSummary := ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json", structs.ParseToModlistSummary)
 
 	includeGames := []string{"skyrimspecialedition", "fallout4"}
 	gameModlistTitleMap := CreateGameModlistTitleMap(repositories, includeGames)
@@ -174,12 +173,27 @@ func GetAllGameModpackArchives(gameNames []string) {
 		if gameName != "skyrimspecialedition" { //temp
 			continue
 		}
+		var wg sync.WaitGroup
+		archivesChan := make(chan structs.BaseModlist, len(modpackTitles))
+
 		for _, title := range modpackTitles {
-			fmt.Printf("current modpack: %v\n", title)
-			allModlists = append(allModlists, GetModpackArchives(title))
+			t := title
+			wg.Go(func() {
+				archivesChan <- GetModpackArchives(modlistSummary, t)
+			})
 		}
+		go func() {
+			wg.Wait()
+			close(archivesChan)
+		}()
+
+		for i := range archivesChan {
+			allModlists = append(allModlists, i)
+		}
+
+		// return allModlists
 	}
 
-	fmt.Printf("allModlists: %v\n", allModlists)
+	// fmt.Printf("allModlists: %v\n", allModlists)
 
 }
