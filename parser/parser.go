@@ -23,19 +23,11 @@ type ModPopularity struct {
 	Count int
 }
 
-func CreateUrlLinksForApiCall() []string {
-	modlists := ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json", structs.ParseToModlistSummary)
-	urlPrefix := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/"
-	urlPostfix := "/status.json"
+func CreateUrlLinkForApiCall(archiveListPostfix string) string {
+	urlPrefix := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/"
 
-	urlLinks := make([]string, 0, len(modlists))
+	return urlPrefix + archiveListPostfix
 
-	for _, modpack := range modlists {
-		archiveSearchString := urlPrefix + modpack.MachineUrl + urlPostfix
-		urlLinks = append(urlLinks, archiveSearchString)
-
-	}
-	return urlLinks
 }
 
 func GetTopPopularMods(apiUrls []string, n int) []ModPopularity {
@@ -124,30 +116,70 @@ func ParseJsonFromApiURL[T any](apiUrl string, parseTo func(jsonData []byte) T) 
 	return parseTo(body)
 }
 
-func CreateModPackMap(apiUrls []structs.Repository, includedGameKeyNames []string) map[string][]string {
-	gameModlistMap := make(map[string][]string, len(apiUrls))
-	//тупая версия
-	for idx, obj := range apiUrls {
-		info := ParseJsonFromApiURL(obj.Link, structs.ParseToModlistInfo)
-		for _, linkInfo := range info {
+func CreateGameModlistTitleMap(apiUrls []structs.Repository, includedGameKeyNames []string) map[string][]string {
+	var wg sync.WaitGroup
+	modlistsChan := make(chan []structs.ModlistInfo, len(apiUrls))
+
+	for _, obj := range apiUrls {
+		u := obj.Link
+		wg.Go(func() {
+			modlistsChan <- ParseJsonFromApiURL(u, structs.ParseToModlistInfo)
+		})
+	}
+	go func() {
+		wg.Wait()
+		close(modlistsChan)
+	}()
+
+	gameModlistTitleMap := make(map[string][]string, len(apiUrls))
+	for range apiUrls {
+		// we're making a pass through apiUrls to infer on the game the modpack belongs to
+		for _, linkInfo := range <-modlistsChan {
 			if slices.Contains(includedGameKeyNames, linkInfo.Game) {
-				gameModlistMap[linkInfo.Game] = append(gameModlistMap[linkInfo.Game], obj.Link)
+				if slices.Contains(gameModlistTitleMap[linkInfo.Game], linkInfo.Title) {
+					continue
+				}
+				gameModlistTitleMap[linkInfo.Game] = append(gameModlistTitleMap[linkInfo.Game], linkInfo.Title)
 			}
 		}
-		fmt.Printf("gameModpackMap: %v\n", idx)
 
 	}
-
-	//конкурентная версия
-	//
-
-	// for _, mInfo := range modlistsInfo {
-	// if gameModlistMap[mInfo.Game]
-	// }
-	return gameModlistMap
+	return gameModlistTitleMap
 }
 
-// Забрать repositories.json,
-// Пробежаться по каждой из представленных ссылок
-// При парсинге оставлять только те где game == переменная
-// Так собираем только модпаки для нужной игры а дальше уже разберемся как получать данные архивов
+func GetModpackArchives(modpackTitle string) structs.BaseModlist {
+	modlistSummary := ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json", structs.ParseToModlistSummary)
+	var urlLink string
+	for _, objModlist := range modlistSummary {
+		if objModlist.ModlistName != modpackTitle {
+			continue
+		}
+		urlLink = CreateUrlLinkForApiCall(objModlist.ArchivesLink)
+	}
+
+	archiveList := ParseJsonFromApiURL(urlLink, structs.ParseToBaseModlist)
+
+	return archiveList
+}
+
+func GetAllGameModpackArchives(gameNames []string) {
+	repositories := ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/repositories.json", structs.ParseToRepos)
+
+	includeGames := []string{"skyrimspecialedition", "fallout4"}
+	gameModlistTitleMap := CreateGameModlistTitleMap(repositories, includeGames)
+
+	allModlists := make([]structs.BaseModlist, 0, len(gameModlistTitleMap["skyrimspecialedition"]))
+
+	for gameName, modpackTitles := range gameModlistTitleMap {
+		if gameName != "skyrimspecialedition" { //temp
+			continue
+		}
+		for _, title := range modpackTitles {
+			fmt.Printf("current modpack: %v\n", title)
+			allModlists = append(allModlists, GetModpackArchives(title))
+		}
+	}
+
+	fmt.Printf("allModlists: %v\n", allModlists)
+
+}

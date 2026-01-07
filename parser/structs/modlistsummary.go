@@ -6,8 +6,9 @@ import (
 )
 
 type ModlistSummary struct {
-	ModlistName string `json:"Name"`
-	MachineUrl  string `json:"MachineUrl"`
+	ModlistName  string `json:"Name"`
+	MachineUrl   string `json:"MachineUrl"`
+	ArchivesLink string `json:"link"`
 }
 
 func ParseToModlistSummary(jsonData []byte) []ModlistSummary {

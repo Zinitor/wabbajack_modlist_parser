@@ -40,9 +40,10 @@ func TestGetModsCountAcrossModpacks(t *testing.T) {
 
 func TestCreateUrlLinksForApiCall(t *testing.T) {
 	// this creates url links but it doesn't give us the actual game for which modpack it is
-	urlLinks := parser.CreateUrlLinksForApiCall()
+	urlLink := parser.CreateUrlLinkForApiCall("reports/Wildlander/wildlander/status.json")
 
-	assert.NotNil(t, urlLinks)
+	wantLink := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/Wildlander/wildlander/status.json"
+	assert.Equal(t, wantLink, urlLink)
 }
 
 func TestGetModlistSummary(t *testing.T) {
@@ -76,11 +77,30 @@ func TestParseModlistsFromRepositoryLinks(t *testing.T) {
 	repositories := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/repositories.json", structs.ParseToRepos)
 
 	includeGames := []string{"skyrimspecialedition", "fallout4"}
-	gameModlistMap := parser.CreateModPackMap(repositories, includeGames)
+	gameModlistTitleMap := parser.CreateGameModlistTitleMap(repositories, includeGames)
 
 	for _, game := range includeGames {
-		assert.Contains(t, gameModlistMap, game, "Expected gameModlistMap to contain modlist for %s", game)
+		assert.Contains(t, gameModlistTitleMap, game, "Expected gameModlistMap to contain modlist for %s", game)
 	}
 
-	fmt.Printf("gameModlistMap: %v\n", gameModlistMap)
+	fmt.Printf("gameModlistMap: %v\n", gameModlistTitleMap)
+}
+
+func TestGetModpackArchives(t *testing.T) {
+
+	modpackTitle := "Skyrim Modding Essentials"
+
+	archives := parser.GetModpackArchives(modpackTitle)
+
+	fmt.Printf("archives: %v\n", archives)
+
+	assert.NotEmpty(t, archives)
+
+}
+
+func TestGetAllGameModpackArchives(t *testing.T) {
+	includeGames := []string{"skyrimspecialedition", "fallout4"}
+
+	parser.GetAllGameModpackArchives(includeGames)
+
 }
