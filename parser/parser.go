@@ -2,6 +2,7 @@
 package parser
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -11,11 +12,11 @@ import (
 	"wabbajackModlistParser/parser/structs"
 )
 
-//TODO
-// 1. Разобраться с логгерами
-// 2. Вынести трансформеры в отдельную подпапку вместе с структурой в которую они приводят
-// 3. Разобраться с юрлками
-// 4. Написать мейн
+//Refactoring plan
+// 1. Move parse, fetch and analyse into it's own packages
+// 2. Improve concurrency for fetching archives
+// 3. Use interfaces where possible
+// 4. Store urls into the struct?
 
 type ModPopularity struct {
 	Name  string
@@ -29,8 +30,8 @@ func CreateUrlLinkForApiCall(archiveListPostfix string) string {
 
 }
 
-func GetTopPopularMods(apiUrls []string, n int) []ModPopularity {
-	counts := GetModsCountAcrossModpacks(apiUrls)
+func GetTopPopularMods(modlists []structs.BaseModlist, n int) []ModPopularity {
+	counts := GetModsCountAcrossModpacks(modlists)
 
 	popularity := make([]ModPopularity, 0, len(counts))
 	for modName, count := range counts {
@@ -47,9 +48,7 @@ func GetTopPopularMods(apiUrls []string, n int) []ModPopularity {
 	return popularity[:n]
 }
 
-func GetModsCountAcrossModpacks(apiUrls []string) map[string]int {
-	modlists := ParseMultipleApi(apiUrls)
-
+func GetModsCountAcrossModpacks(modlists []structs.BaseModlist) map[string]int {
 	ModsCountMap := make(map[string]int)
 
 	for _, mod := range modlists {
@@ -160,9 +159,12 @@ func GetModpackArchives(modlistSummary []structs.ModlistSummary, modpackTitle st
 	return archiveList
 }
 
-func GetAllGameModpackArchives(gameNames []string) {
-	repositories := ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/repositories.json", structs.ParseToRepos)
-	modlistSummary := ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json", structs.ParseToModlistSummary)
+func MainParse(gameNames []string) {
+	reposParser := structs.NewReposParser()
+	repositories := reposParser.Parse()
+
+	modlistSummaryParser := structs.NewModlistSummaryParser()
+	modlistSummary := modlistSummaryParser.Parse()
 
 	includeGames := []string{"skyrimspecialedition", "fallout4"}
 	gameModlistTitleMap := CreateGameModlistTitleMap(repositories, includeGames)
@@ -191,9 +193,7 @@ func GetAllGameModpackArchives(gameNames []string) {
 			allModlists = append(allModlists, i)
 		}
 
-		// return allModlists
 	}
-
-	// fmt.Printf("allModlists: %v\n", allModlists)
-
+	modsCount := GetTopPopularMods(allModlists, 100)
+	fmt.Printf("modsCount: %v\n", modsCount)
 }

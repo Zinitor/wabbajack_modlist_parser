@@ -3,6 +3,7 @@ package structs
 import (
 	"encoding/json"
 	"log/slog"
+	"wabbajackModlistParser/parser/utils"
 )
 
 type Repository struct {
@@ -10,8 +11,22 @@ type Repository struct {
 	Link string
 }
 
-func ParseToRepos(jsonData []byte) []Repository {
+type ReposParser struct {
+	baseUrl string
+}
 
+func NewReposParser() *ReposParser {
+	return &ReposParser{
+		baseUrl: "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/repositories.json",
+	}
+}
+
+func (r *ReposParser) Parse() []Repository {
+	responseBody := utils.Fetch(r.baseUrl)
+	return r.Transform(responseBody)
+}
+
+func (r *ReposParser) Transform(jsonData []byte) []Repository {
 	var result map[string]string
 	err := json.Unmarshal(jsonData, &result)
 	if err != nil {
