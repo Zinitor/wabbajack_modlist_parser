@@ -12,7 +12,7 @@ type ModlistInfo struct {
 	Game  string `json:"game"`
 	//потом можно сделать статистику какие моды чаще всего используются в определенных типах модпаков
 	// Tags   []string `json:"tags"`
-	IsNSFW bool `json:"nsfw"`
+	// IsNSFW bool `json:"nsfw"`
 }
 
 func ParseToModlistInfo(r io.Reader) []ModlistInfo {

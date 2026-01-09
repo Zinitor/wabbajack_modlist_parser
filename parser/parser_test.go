@@ -16,21 +16,21 @@ var ApiUrls []string = []string{
 	"https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/wj-featured/living_skyrim/status.json",
 }
 
-func TestCompareParseFromApiAndFile(t *testing.T) {
-	apiArchiveSumSize := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/Geborgen/nordic-souls/status.json", structs.ParseToBaseModlist)
-	localArchiveSumSize := structs.ParseFromFile("archiveData.json")
-	assert.Equal(t, apiArchiveSumSize, localArchiveSumSize)
-}
+// func TestCompareParseFromApiAndFile(t *testing.T) {
+// 	apiArchiveSumSize := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/Geborgen/nordic-souls/status.json", structs.ParseToBaseModlist)
+// 	localArchiveSumSize := structs.ParseFromFile("archiveData.json")
+// 	assert.Equal(t, apiArchiveSumSize, localArchiveSumSize)
+// }
 
-func TestParseMultipleApi(t *testing.T) {
-	apiArchiveSumSize := parser.ParseMultipleApi(ApiUrls)
-	assert.NotEmpty(t, apiArchiveSumSize)
-}
+// func TestParseMultipleApi(t *testing.T) {
+// 	apiArchiveSumSize := parser.ParseMultipleApi(ApiUrls)
+// 	assert.NotEmpty(t, apiArchiveSumSize)
+// }
 
-func TestParseMultipleApiConurrent(t *testing.T) {
-	apiArchiveSumSize := parser.ParseMultipleApiConcurrent(ApiUrls)
-	assert.NotEmpty(t, apiArchiveSumSize)
-}
+// func TestParseMultipleApiConurrent(t *testing.T) {
+// 	apiArchiveSumSize := parser.ParseMultipleApiConcurrent(ApiUrls)
+// 	assert.NotEmpty(t, apiArchiveSumSize)
+// }
 
 func TestCreateUrlLinksForApiCall(t *testing.T) {
 	// this creates url links but it doesn't give us the actual game for which modpack it is
