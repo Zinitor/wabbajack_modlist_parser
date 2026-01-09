@@ -1,11 +1,12 @@
 package structs
 
 import (
-	"encoding/json"
 	"io"
 	"log"
 	"log/slog"
 	"os"
+
+	"github.com/goccy/go-json"
 )
 
 type State struct {
@@ -22,6 +23,7 @@ type Archive struct {
 
 type BaseModlist struct {
 	Archives []Archive `json:"Archives"`
+	Name     string    `json:"Name"`
 }
 
 func ParseToBaseModlist(jsonData []byte) BaseModlist {

@@ -156,19 +156,22 @@ func MainParse(gameNames []string) {
 	}()
 	modlistSummary := <-summaryCh
 
-	gameModlistTitleMap := CreateGameModlistTitleMap(repositories, gameNames)
+	gameModlistTitlesMap := CreateGameModlistTitleMap(repositories, gameNames)
 	var allModlistsLen int
-	for key := range gameModlistTitleMap {
-		allModlistsLen = len(gameModlistTitleMap[key])
+	for key := range gameModlistTitlesMap {
+		allModlistsLen = len(gameModlistTitlesMap[key])
 	}
 
 	allModlistsMap := make(map[string]int, allModlistsLen)
 
-	for _, modpackTitles := range gameModlistTitleMap {
+	for _, modpackTitles := range gameModlistTitlesMap {
+		//wg внутри цикла чтобы мы собирали модпаки по каждой игре,
 		var wg sync.WaitGroup
 		archivesChan := make(chan map[string]int, len(modpackTitles))
 
 		for _, title := range modpackTitles {
+			// поскольку я ожидаю пока все горутины закончат работу и спарсят свои данные то здесь и происходит горлышко по памяти
+			// ведь я жду пока я получу все архивы, а мне вовсе необязательно это делать
 			t := title
 			wg.Go(func() {
 				archivesChan <- GetModpackArchives(modlistSummary, t)
