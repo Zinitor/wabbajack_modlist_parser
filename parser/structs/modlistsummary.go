@@ -1,14 +1,15 @@
 package structs
 
 import (
-	"encoding/json"
+	"io"
 	"log/slog"
 	"wabbajackModlistParser/parser/utils"
+
+	"github.com/goccy/go-json"
 )
 
 type ModlistSummary struct {
 	ModlistName  string `json:"Name"`
-	MachineUrl   string `json:"MachineUrl"`
 	ArchivesLink string `json:"link"`
 }
 
@@ -24,16 +25,16 @@ func NewModlistSummaryParser() *ModlistSummaryParser {
 
 func (m *ModlistSummaryParser) Parse() []ModlistSummary {
 	responseBody := utils.Fetch(m.baseUrl)
-
+	defer responseBody.Close()
 	return m.Transform(responseBody)
 }
 
-func (m *ModlistSummaryParser) Transform(jsonData []byte) []ModlistSummary {
-	var parsedData []ModlistSummary
-	err := json.Unmarshal(jsonData, &parsedData)
+func (p *ModlistSummaryParser) Transform(r io.Reader) []ModlistSummary {
+	var data []ModlistSummary
+	err := json.NewDecoder(r).Decode(&data)
 	if err != nil {
-		slog.Error("unmarshal err", slog.Any("err", err))
+		slog.Error("json decode failed", slog.Any("err", err))
 	}
 
-	return parsedData
+	return data
 }

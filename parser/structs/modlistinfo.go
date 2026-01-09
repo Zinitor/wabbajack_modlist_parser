@@ -1,25 +1,27 @@
 package structs
 
 import (
-	"encoding/json"
+	"io"
 	"log/slog"
+
+	"github.com/goccy/go-json"
 )
 
 type ModlistInfo struct {
 	Title string `json:"title"`
 	Game  string `json:"game"`
 	//потом можно сделать статистику какие моды чаще всего используются в определенных типах модпаков
-	Tags   []string `json:"tags"`
-	IsNSFW bool     `json:"nsfw"`
+	// Tags   []string `json:"tags"`
+	IsNSFW bool `json:"nsfw"`
 }
 
-func ParseToModlistInfo(jsonData []byte) []ModlistInfo {
-	var parsedData []ModlistInfo
-	err := json.Unmarshal(jsonData, &parsedData)
+func ParseToModlistInfo(r io.Reader) []ModlistInfo {
+	var data []ModlistInfo
+	err := json.NewDecoder(r).Decode(&data)
 	if err != nil {
-		slog.Error("unmarshal err", slog.Any("err", err))
+		slog.Error("json decode failed", slog.Any("err", err))
 	}
 
-	return parsedData
+	return data
 
 }

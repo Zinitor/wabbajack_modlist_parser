@@ -7,37 +7,33 @@ import (
 	"sync"
 )
 
-func Fetch(baseUrl string) []byte {
+func Fetch(baseUrl string) io.ReadCloser {
 	response, err := http.Get(baseUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
+		response.Body.Close()
 		log.Fatalf("API request failed with status: %d", response.StatusCode)
 	}
 
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return body
+	return response.Body
 }
 
 func FetchAndParse[T any](
 	baseUrl string,
-	parseFunc func([]byte) []T,
+	parseFunc func(io.Reader) []T,
 ) []T {
-	data := Fetch(baseUrl)
-	parsed := parseFunc(data)
+	body := Fetch(baseUrl)
+	defer body.Close()
+	parsed := parseFunc(body)
 	return parsed
 }
 
 func ConcurrentFetchAndParse[T any](
 	urls []string,
-	parseFunc func([]byte) []T,
+	parseFunc func(io.Reader) []T,
 ) <-chan []T {
 	var wg sync.WaitGroup
 	parsedChan := make(chan []T, len(urls))

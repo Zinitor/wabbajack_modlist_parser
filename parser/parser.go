@@ -161,20 +161,30 @@ func GetModpackArchives(modlistSummary []structs.ModlistSummary, modpackTitle st
 
 func MainParse(gameNames []string) {
 	reposParser := structs.NewReposParser()
-	repositories := reposParser.Parse()
+	reposCh := make(chan []structs.Repository, 1)
+	go func() {
+		defer close(reposCh)
+		reposCh <- reposParser.Parse()
+	}()
+	repositories := <-reposCh
 
 	modlistSummaryParser := structs.NewModlistSummaryParser()
-	modlistSummary := modlistSummaryParser.Parse()
+	summaryCh := make(chan []structs.ModlistSummary, 1)
+	go func() {
+		defer close(summaryCh)
+		summaryCh <- modlistSummaryParser.Parse()
+	}()
+	modlistSummary := <-summaryCh
 
-	includeGames := []string{"skyrimspecialedition", "fallout4"}
-	gameModlistTitleMap := CreateGameModlistTitleMap(repositories, includeGames)
+	gameModlistTitleMap := CreateGameModlistTitleMap(repositories, gameNames)
+	var allModlistsLen int
+	for key := range gameModlistTitleMap {
+		allModlistsLen = len(gameModlistTitleMap[key])
+	}
 
-	allModlists := make([]structs.BaseModlist, 0, len(gameModlistTitleMap["skyrimspecialedition"]))
+	allModlists := make([]structs.BaseModlist, 0, allModlistsLen)
 
-	for gameName, modpackTitles := range gameModlistTitleMap {
-		if gameName != "skyrimspecialedition" { //temp
-			continue
-		}
+	for _, modpackTitles := range gameModlistTitleMap {
 		var wg sync.WaitGroup
 		archivesChan := make(chan structs.BaseModlist, len(modpackTitles))
 

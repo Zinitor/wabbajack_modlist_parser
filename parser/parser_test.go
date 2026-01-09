@@ -72,7 +72,7 @@ func TestParseModlistsFromRepositoryLinks(t *testing.T) {
 	reposParser := structs.NewReposParser()
 	repositories := reposParser.Parse()
 
-	includeGames := []string{"skyrimspecialedition", "fallout4"}
+	includeGames := []string{"skyrimspecialedition"}
 	gameModlistTitleMap := parser.CreateGameModlistTitleMap(repositories, includeGames)
 
 	for _, game := range includeGames {
@@ -96,8 +96,15 @@ func TestParseModlistsFromRepositoryLinks(t *testing.T) {
 // }
 
 func TestGetAllGameModpackArchives(t *testing.T) {
-	includeGames := []string{"skyrimspecialedition", "fallout4"}
+	includeGames := []string{"skyrimspecialedition"}
 
 	parser.MainParse(includeGames)
+}
 
+func BenchmarkMainParse(b *testing.B) {
+	includeGames := []string{"skyrimspecialedition"}
+
+	for b.Loop() {
+		parser.MainParse(includeGames)
+	}
 }

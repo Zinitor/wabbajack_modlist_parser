@@ -1,9 +1,11 @@
 package structs
 
 import (
-	"encoding/json"
+	"io"
 	"log/slog"
 	"wabbajackModlistParser/parser/utils"
+
+	"github.com/goccy/go-json"
 )
 
 type Repository struct {
@@ -23,27 +25,21 @@ func NewReposParser() *ReposParser {
 
 func (r *ReposParser) Parse() []Repository {
 	responseBody := utils.Fetch(r.baseUrl)
+	defer responseBody.Close()
 	return r.Transform(responseBody)
 }
 
-func (r *ReposParser) Transform(jsonData []byte) []Repository {
+func (r *ReposParser) Transform(reader io.Reader) []Repository {
 	var result map[string]string
-	err := json.Unmarshal(jsonData, &result)
+	err := json.NewDecoder(reader).Decode(&result)
 	if err != nil {
-		slog.Error("unmarshal err", slog.Any("err", err))
+		slog.Error("JSON decode failed", slog.Any("err", err))
+		return nil
 	}
 
 	parsedData := make([]Repository, 0, len(result))
-
 	for name, link := range result {
-		parsedData = append(parsedData,
-			Repository{
-				Name: name,
-				Link: link,
-			},
-		)
-
+		parsedData = append(parsedData, Repository{Name: name, Link: link})
 	}
-
 	return parsedData
 }
