@@ -31,7 +31,6 @@ func CreateUrlLinkForApiCall(archiveListPostfix string) string {
 }
 
 func GetTopPopularMods(modlists map[string]int, n int) []ModPopularity {
-	// counts := GetModsCountAcrossModpacks(modlists)
 
 	popularity := make([]ModPopularity, 0, len(modlists))
 	for modName, count := range modlists {
@@ -47,38 +46,6 @@ func GetTopPopularMods(modlists map[string]int, n int) []ModPopularity {
 	}
 	return popularity[:n]
 }
-
-// func ParseMultipleApi(apiUrls []string) []structs.BaseModlist {
-// 	modlists := make([]structs.BaseModlist, 0, len(apiUrls))
-// 	for _, url := range apiUrls {
-// 		modlists = append(modlists, ParseJsonFromApiURL(url, structs.ParseToBaseModlist))
-// 	}
-// 	return modlists
-// }
-
-// func ParseMultipleApiConcurrent(apiUrls []string) []structs.BaseModlist {
-// 	var wg sync.WaitGroup
-// 	modlistsChan := make(chan structs.BaseModlist, len(apiUrls))
-
-// 	for _, url := range apiUrls {
-// 		u := url // ← затеняем значение переменной цикла чтобы все вызовы получили нужное значение,
-// 		// иначе они потенциально все могут получить последнее значение в range
-// 		wg.Go(func() {
-// 			modlistsChan <- ParseJsonFromApiURL(u, structs.ParseToModlistArchiveMap)
-// 		})
-// 	}
-// 	go func() {
-// 		wg.Wait()
-// 		close(modlistsChan)
-// 	}()
-
-// 	modlists := make([]structs.BaseModlist, 0, len(apiUrls))
-// 	for i := range modlistsChan {
-// 		modlists = append(modlists, i)
-// 	}
-
-// 	return modlists
-// }
 
 func ParseJsonFromApiURL[T any](apiUrl string, parseTo func(r io.Reader) T) T {
 	response, err := http.Get(apiUrl)
@@ -125,6 +92,12 @@ func CreateGameModlistTitleMap(apiUrls []structs.Repository, includedGameKeyName
 	return gameModlistTitleMap
 }
 
+func worker(id int, jobs <-chan []structs.ModlistSummary, results chan<- map[string]int) {
+	for j := range jobs {
+		results <- GetModpackArchives(j)
+	}
+}
+
 func GetModpackArchives(modlistSummary []structs.ModlistSummary, modpackTitle string) map[string]int {
 	var urlLink string
 	for _, objModlist := range modlistSummary {
@@ -139,21 +112,27 @@ func GetModpackArchives(modlistSummary []structs.ModlistSummary, modpackTitle st
 	return archiveList
 }
 
+type Parser[T any] interface {
+	Parse() []T
+}
+
+func GetBase[T any](p Parser[T]) <-chan []T {
+	ch := make(chan []T, 1)
+	go func() {
+		defer close(ch)
+		ch <- p.Parse()
+	}()
+	return ch
+
+}
+
 func MainParse(gameNames []string) {
 	reposParser := structs.NewReposParser()
-	reposCh := make(chan []structs.Repository, 1)
-	go func() {
-		defer close(reposCh)
-		reposCh <- reposParser.Parse()
-	}()
+	reposCh := GetBase(reposParser)
 	repositories := <-reposCh
 
 	modlistSummaryParser := structs.NewModlistSummaryParser()
-	summaryCh := make(chan []structs.ModlistSummary, 1)
-	go func() {
-		defer close(summaryCh)
-		summaryCh <- modlistSummaryParser.Parse()
-	}()
+	summaryCh := GetBase(modlistSummaryParser)
 	modlistSummary := <-summaryCh
 
 	gameModlistTitlesMap := CreateGameModlistTitleMap(repositories, gameNames)
