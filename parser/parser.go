@@ -2,6 +2,7 @@
 package parser
 
 import (
+	"context"
 	"io"
 	"log"
 	"net/http"
@@ -104,17 +105,11 @@ func GetModpackArchives(modlistSummary []structs.ModlistSummary, modpackTitle st
 	return archiveList
 }
 
-type Parser[T any] interface {
-	Parse() []T
-}
-
-func GetBase[T any](p Parser[T]) <-chan []T {
-	ch := make(chan []T, 1)
-	go func() {
-		defer close(ch)
-		ch <- p.Parse()
-	}()
-	return ch
+func GetModlistSummary(ctx context.Context) ([]structs.ModlistSummary, error) {
+	modlistSummaryParser := structs.NewModlistSummaryParser()
+	summaryCh := GetBase(modlistSummaryParser)
+	modlistSummary := <-summaryCh
+	return modlistSummary, nil
 }
 
 func MainParse(gameNames []string) {
@@ -122,9 +117,10 @@ func MainParse(gameNames []string) {
 	reposCh := GetBase(reposParser)
 	repositories := <-reposCh
 
-	modlistSummaryParser := structs.NewModlistSummaryParser()
-	summaryCh := GetBase(modlistSummaryParser)
-	modlistSummary := <-summaryCh
+	modlistSummary, err := GetModlistSummary(context.TODO())
+	if err != nil {
+		log.Fatalf("API request failed with status: %d", err)
+	}
 
 	gameModlistTitlesMap := CreateGameModlistTitleMap(repositories, gameNames)
 	var allModlistsLen int
@@ -160,5 +156,4 @@ func MainParse(gameNames []string) {
 
 	}
 	_ = GetTopPopularMods(allModlistsMap, 100)
-	// fmt.Printf("modsCount: %v\n", modsCount)
 }
