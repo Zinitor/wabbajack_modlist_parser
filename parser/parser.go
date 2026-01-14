@@ -2,17 +2,17 @@
 package parser
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"slices"
 	"sort"
 	"sync"
+
 	"wabbajackModlistParser/parser/structs"
 )
 
-//Refactoring plan
+// Refactoring plan
 // 1. Move parse, fetch and analyse into it's own packages
 // 2. Improve concurrency for fetching archives
 // 3. Use interfaces where possible
@@ -23,15 +23,13 @@ type ModPopularity struct {
 	Count int
 }
 
-func CreateUrlLinkForApiCall(archiveListPostfix string) string {
+func CreateURLLinkForAPICall(archiveListPostfix string) string {
 	urlPrefix := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/"
 
 	return urlPrefix + archiveListPostfix
-
 }
 
 func GetTopPopularMods(modlists map[string]int, n int) []ModPopularity {
-
 	popularity := make([]ModPopularity, 0, len(modlists))
 	for modName, count := range modlists {
 		popularity = append(popularity, ModPopularity{Name: modName, Count: count})
@@ -47,14 +45,15 @@ func GetTopPopularMods(modlists map[string]int, n int) []ModPopularity {
 	return popularity[:n]
 }
 
-func ParseJsonFromApiURL[T any](apiUrl string, parseTo func(r io.Reader) T) T {
-	response, err := http.Get(apiUrl)
+func ParseJSONFromAPIUrl[T any](apiURL string, parseTo func(r io.Reader) T) T {
+	response, err := http.Get(apiURL)
 	if err != nil {
+		defer response.Body.Close()
 		log.Fatal(err)
 	}
-	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
+		defer response.Body.Close()
 		log.Fatalf("API request failed with status: %d", response.StatusCode)
 	}
 
@@ -68,7 +67,7 @@ func CreateGameModlistTitleMap(apiUrls []structs.Repository, includedGameKeyName
 	for _, obj := range apiUrls {
 		u := obj.Link
 		wg.Go(func() {
-			modlistsChan <- ParseJsonFromApiURL(u, structs.ParseToModlistInfo)
+			modlistsChan <- ParseJSONFromAPIUrl(u, structs.ParseToModlistInfo)
 		})
 	}
 	go func() {
@@ -87,15 +86,8 @@ func CreateGameModlistTitleMap(apiUrls []structs.Repository, includedGameKeyName
 				gameModlistTitleMap[linkInfo.Game] = append(gameModlistTitleMap[linkInfo.Game], linkInfo.Title)
 			}
 		}
-
 	}
 	return gameModlistTitleMap
-}
-
-func worker(id int, jobs <-chan []structs.ModlistSummary, results chan<- map[string]int) {
-	for j := range jobs {
-		results <- GetModpackArchives(j)
-	}
 }
 
 func GetModpackArchives(modlistSummary []structs.ModlistSummary, modpackTitle string) map[string]int {
@@ -104,10 +96,10 @@ func GetModpackArchives(modlistSummary []structs.ModlistSummary, modpackTitle st
 		if objModlist.ModlistName != modpackTitle {
 			continue
 		}
-		urlLink = CreateUrlLinkForApiCall(objModlist.ArchivesLink)
+		urlLink = CreateURLLinkForAPICall(objModlist.ArchivesLink)
 	}
 
-	archiveList := ParseJsonFromApiURL(urlLink, structs.ParseToModlistArchiveMap)
+	archiveList := ParseJSONFromAPIUrl(urlLink, structs.ParseToModlistArchiveMap)
 
 	return archiveList
 }
@@ -123,7 +115,6 @@ func GetBase[T any](p Parser[T]) <-chan []T {
 		ch <- p.Parse()
 	}()
 	return ch
-
 }
 
 func MainParse(gameNames []string) {
@@ -144,7 +135,7 @@ func MainParse(gameNames []string) {
 	allModlistsMap := make(map[string]int, allModlistsLen)
 
 	for _, modpackTitles := range gameModlistTitlesMap {
-		//wg внутри цикла чтобы мы собирали модпаки по каждой игре,
+		// wg внутри цикла чтобы мы собирали модпаки по каждой игре,
 		var wg sync.WaitGroup
 		archivesChan := make(chan map[string]int, len(modpackTitles))
 
@@ -164,12 +155,10 @@ func MainParse(gameNames []string) {
 		for mObj := range archivesChan {
 			for modName, quantity := range mObj {
 				allModlistsMap[modName] += quantity
-
 			}
-
 		}
 
 	}
-	modsCount := GetTopPopularMods(allModlistsMap, 100)
-	fmt.Printf("modsCount: %v\n", modsCount)
+	_ = GetTopPopularMods(allModlistsMap, 100)
+	// fmt.Printf("modsCount: %v\n", modsCount)
 }

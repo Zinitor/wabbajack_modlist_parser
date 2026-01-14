@@ -34,7 +34,7 @@ var ApiUrls []string = []string{
 
 func TestCreateUrlLinksForApiCall(t *testing.T) {
 	// this creates url links but it doesn't give us the actual game for which modpack it is
-	urlLink := parser.CreateUrlLinkForApiCall("reports/Wildlander/wildlander/status.json")
+	urlLink := parser.CreateURLLinkForAPICall("reports/Wildlander/wildlander/status.json")
 
 	wantLink := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/Wildlander/wildlander/status.json"
 	assert.Equal(t, wantLink, urlLink)
@@ -57,7 +57,7 @@ func TestCreateUrlLinksForApiCall(t *testing.T) {
 // }
 
 func TestParseJsonToModlistInfo(t *testing.T) {
-	modlistInfo := parser.ParseJsonFromApiURL("https://raw.githubusercontent.com/tpartridge89/ElderTeej/main/modlists.json", structs.ParseToModlistInfo)
+	modlistInfo := parser.ParseJSONFromAPIUrl("https://raw.githubusercontent.com/tpartridge89/ElderTeej/main/modlists.json", structs.ParseToModlistInfo)
 	assert.NotEmpty(t, modlistInfo)
 	fmt.Printf("modlistInfo: %v\n", modlistInfo)
 }
