@@ -48,9 +48,9 @@ func GetTopPopularMods(modlists map[string]int, n int) []ModPopularity {
 func ParseJSONFromAPIUrl[T any](apiURL string, parseTo func(r io.Reader) T) T {
 	response, err := http.Get(apiURL)
 	if err != nil {
-		defer response.Body.Close()
 		log.Fatal(err)
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
 		defer response.Body.Close()

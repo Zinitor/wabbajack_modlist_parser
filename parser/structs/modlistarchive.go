@@ -39,7 +39,7 @@ func ParseToBaseModlist(jsonData []byte) BaseModlist {
 func ParseToModlistArchiveMap(r io.Reader) map[string]int {
 	myMap := make(map[string]int, 0)
 	decoder := json.NewDecoder(r)
-	//this can be optimized as we don't really need the full modlist here
+
 	var fullModlist BaseModlist
 	err := decoder.Decode(&fullModlist)
 	if err != nil {

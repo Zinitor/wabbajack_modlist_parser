@@ -3,7 +3,6 @@ package structs_test
 import (
 	"bytes"
 	"embed"
-	"fmt"
 	"io"
 	"path/filepath"
 	"testing"
@@ -70,8 +69,7 @@ func BenchmarkParseModlist(b *testing.B) {
 func TestParseToModlistInfo(t *testing.T) {
 	data := loadTestData(t, "json_examples/modlistinfo_example.json")
 	reader := bytes.NewReader(data)
-	modlistInfo := structs.ParseToModlistInfo(reader)
-	fmt.Printf("modlistInfo: %v\n", modlistInfo)
+	_ = structs.ParseToModlistInfo(reader)
 }
 
 func BenchmarkParseToModlistInfo(b *testing.B) {
