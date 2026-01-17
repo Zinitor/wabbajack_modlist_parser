@@ -2,16 +2,14 @@ package app
 
 import (
 	"context"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 	"wabbajackModlistParser/config"
+	"wabbajackModlistParser/internal/controller/restapi"
 	"wabbajackModlistParser/pkg/httpserver"
 	"wabbajackModlistParser/pkg/logger"
-
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 func Run(cfg *config.Config) {
@@ -25,19 +23,8 @@ func Run(cfg *config.Config) {
 	)
 
 	router := srv.Router()
-	//TODO move middlewares elsewhere
-	router.Use(middleware.RequestID)
-	router.Use(middleware.RealIP)
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.Compress(5))
-	router.Use(middleware.Timeout(60 * time.Second))
 
-	//TODO move registering routes elsewhere
-	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
-	})
+	restapi.NewRouter(router, cfg, l)
 
 	// Start the server
 	srv.Start()
