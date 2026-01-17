@@ -24,9 +24,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/status": {
+        "/api/v1/health": {
             "get": {
-                "description": "Get API version and status",
+                "description": "Check if the API is running",
                 "consumes": [
                     "application/json"
                 ],
@@ -34,9 +34,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "api"
+                    "health"
                 ],
-                "summary": "API status",
+                "summary": "Health check",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -50,9 +50,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/health": {
+        "/api/v1/status": {
             "get": {
-                "description": "Check if the API is running",
+                "description": "Get API version and status",
                 "consumes": [
                     "application/json"
                 ],
@@ -60,9 +60,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "health"
+                    "api"
                 ],
-                "summary": "Health check",
+                "summary": "API status",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -90,8 +90,8 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Wabbajack Modlist Parser API",
 	Description:      "API for parsing Wabbajack modlists",

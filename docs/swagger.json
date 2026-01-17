@@ -15,12 +15,10 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
-    "basePath": "/api/v1",
     "paths": {
-        "/api/v1/status": {
+        "/api/v1/health": {
             "get": {
-                "description": "Get API version and status",
+                "description": "Check if the API is running",
                 "consumes": [
                     "application/json"
                 ],
@@ -28,9 +26,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "api"
+                    "health"
                 ],
-                "summary": "API status",
+                "summary": "Health check",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -44,9 +42,9 @@
                 }
             }
         },
-        "/health": {
+        "/api/v1/status": {
             "get": {
-                "description": "Check if the API is running",
+                "description": "Get API version and status",
                 "consumes": [
                     "application/json"
                 ],
@@ -54,9 +52,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "health"
+                    "api"
                 ],
-                "summary": "Health check",
+                "summary": "API status",
                 "responses": {
                     "200": {
                         "description": "OK",

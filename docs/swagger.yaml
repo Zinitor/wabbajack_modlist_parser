@@ -1,5 +1,3 @@
-basePath: /api/v1
-host: localhost:8080
 info:
   contact:
     email: support@example.com
@@ -13,6 +11,23 @@ info:
   title: Wabbajack Modlist Parser API
   version: "1.0"
 paths:
+  /api/v1/health:
+    get:
+      consumes:
+      - application/json
+      description: Check if the API is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - health
   /api/v1/status:
     get:
       consumes:
@@ -30,23 +45,6 @@ paths:
       summary: API status
       tags:
       - api
-  /health:
-    get:
-      consumes:
-      - application/json
-      description: Check if the API is running
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Health check
-      tags:
-      - health
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.
