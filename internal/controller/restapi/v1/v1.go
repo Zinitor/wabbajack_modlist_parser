@@ -19,7 +19,7 @@ func NewTestRoutes(apiV1Group chi.Router, l logger.Interface) {
 	h := &V1{l: l}
 
 	apiV1Group.Get("/status", h.apiStatus)
-	apiV1Group.Get("/health", h.healthCheck) // Changed from Post to Get
+	apiV1Group.Get("/health", h.healthCheck)
 }
 
 // Health check endpoint
