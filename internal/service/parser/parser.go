@@ -9,8 +9,7 @@ import (
 	"slices"
 	"sort"
 	"sync"
-
-	"wabbajackModlistParser/parser/structs"
+	"wabbajackModlistParser/internal/service/parser/structs"
 )
 
 // Refactoring plan
