@@ -16,7 +16,7 @@ import (
 )
 
 // NewRouter -.
-func NewRouter(router chi.Router, cfg *config.Config, l logger.Interface) {
+func NewRouter(router chi.Router, cfg *config.Config, l logger.Interface, v1Handler *v1.V1) {
 	// TODO move elsewhere
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
@@ -38,7 +38,7 @@ func NewRouter(router chi.Router, cfg *config.Config, l logger.Interface) {
 
 	// API v1 routes
 	router.Route("/api/v1", func(r chi.Router) {
-		v1.RegisterRoutes(r, l)
+		v1.RegisterRoutes(r, v1Handler)
 	})
 
 	if cfg.Swagger.Enabled {
