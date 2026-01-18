@@ -6,6 +6,13 @@ definitions:
       link:
         type: string
     type: object
+  v1.RepositoryResponse:
+    properties:
+      link:
+        type: string
+      name:
+        type: string
+    type: object
 info:
   contact:
     email: support@example.com
@@ -19,6 +26,29 @@ info:
   title: Wabbajack Modlist Parser API
   version: "1.0"
 paths:
+  /api/v1/games:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all available games
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all games
+      tags:
+      - games
   /api/v1/health:
     get:
       consumes:
@@ -59,6 +89,29 @@ paths:
       summary: Get all modlists
       tags:
       - modlists
+  /api/v1/repositories:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all available repositories with their details
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/v1.RepositoryResponse'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all repositories
+      tags:
+      - repositories
   /api/v1/status:
     get:
       consumes:

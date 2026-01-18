@@ -23,12 +23,6 @@ type ModPopularity struct {
 	Count int
 }
 
-func CreateURLLinkForAPICall(archiveListPostfix string) string {
-	urlPrefix := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/"
-
-	return urlPrefix + archiveListPostfix
-}
-
 func GetTopPopularMods(modlists map[string]int, n int) []ModPopularity {
 	popularity := make([]ModPopularity, 0, len(modlists))
 	for modName, count := range modlists {
