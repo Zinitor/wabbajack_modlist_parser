@@ -1,4 +1,4 @@
-// Package v1 implements routing paths. Each services in own file.
+// Package restapi implements routing paths. Each services in own file.
 package restapi
 
 import (
@@ -26,11 +26,11 @@ func NewRouter(router chi.Router, cfg *config.Config, l logger.Interface) {
 	router.Use(middleware.Timeout(60 * time.Second))
 
 	// Root endpoints (not under /api/v1)
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte("Wabbajack Modlist Parser API"))
 	})
 
-	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status": "ok"}`))

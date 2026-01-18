@@ -3,7 +3,7 @@ package structs
 import (
 	"io"
 	"log/slog"
-	"wabbajackModlistParser/internal/service/parser/utils"
+	"wabbajackModlistParser/internal/services/parser/utils"
 
 	"github.com/goccy/go-json"
 )
@@ -14,17 +14,17 @@ type Repository struct {
 }
 
 type ReposParser struct {
-	baseUrl string
+	baseURL string
 }
 
 func NewReposParser() *ReposParser {
 	return &ReposParser{
-		baseUrl: "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/repositories.json",
+		baseURL: "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/repositories.json",
 	}
 }
 
 func (r *ReposParser) Parse() []Repository {
-	responseBody := utils.Fetch(r.baseUrl)
+	responseBody := utils.Fetch(r.baseURL)
 	defer responseBody.Close()
 	return r.Transform(responseBody)
 }

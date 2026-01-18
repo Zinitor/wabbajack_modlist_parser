@@ -55,7 +55,7 @@ func NewConfig() (*Config, error) {
 	}
 
 	cfg := &Config{}
-	if err := env.Parse(cfg); err != nil {
+	if err = env.Parse(cfg); err != nil {
 		return nil, fmt.Errorf("config error: %w", err)
 	}
 

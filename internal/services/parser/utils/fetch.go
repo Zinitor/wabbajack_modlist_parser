@@ -7,8 +7,8 @@ import (
 	"sync"
 )
 
-func Fetch(baseUrl string) io.ReadCloser {
-	response, err := http.Get(baseUrl)
+func Fetch(baseURL string) io.ReadCloser {
+	response, err := http.Get(baseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -22,10 +22,10 @@ func Fetch(baseUrl string) io.ReadCloser {
 }
 
 func FetchAndParse[T any](
-	baseUrl string,
+	baseURL string,
 	parseFunc func(io.Reader) []T,
 ) []T {
-	body := Fetch(baseUrl)
+	body := Fetch(baseURL)
 	defer body.Close()
 	parsed := parseFunc(body)
 	return parsed

@@ -6,7 +6,7 @@ import (
 	"io"
 	"path/filepath"
 	"testing"
-	"wabbajackModlistParser/internal/service/parser/structs"
+	"wabbajackModlistParser/internal/services/parser/structs"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -3,8 +3,8 @@ package parser_test
 import (
 	"fmt"
 	"testing"
-	"wabbajackModlistParser/internal/service/parser"
-	"wabbajackModlistParser/internal/service/parser/structs"
+	"wabbajackModlistParser/internal/services/parser"
+	"wabbajackModlistParser/internal/services/parser/structs"
 
 	"github.com/stretchr/testify/assert"
 )

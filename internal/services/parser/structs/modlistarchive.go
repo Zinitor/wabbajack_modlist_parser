@@ -48,7 +48,7 @@ func ParseToModlistArchiveMap(r io.Reader) map[string]int {
 
 	for _, archive := range fullModlist.Archives {
 		if archive.Original.State.Name != "" {
-			myMap[archive.Original.State.Name] += 1
+			myMap[archive.Original.State.Name]++
 		}
 	}
 

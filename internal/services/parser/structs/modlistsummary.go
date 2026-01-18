@@ -3,7 +3,7 @@ package structs
 import (
 	"io"
 	"log/slog"
-	"wabbajackModlistParser/internal/service/parser/utils"
+	"wabbajackModlistParser/internal/services/parser/utils"
 
 	"github.com/goccy/go-json"
 )
