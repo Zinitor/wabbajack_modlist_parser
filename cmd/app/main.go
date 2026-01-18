@@ -1,20 +1,20 @@
 // main.go
-// @title Wabbajack Modlist Parser API
-// @version 1.0
-// @description API for parsing Wabbajack modlists
-// @termsOfService http://swagger.io/terms/
+//	@title			Wabbajack Modlist Parser API
+//	@version		1.0
+//	@description	API for parsing Wabbajack modlists
+//	@termsOfService	http://swagger.io/terms/
 
-// @contact.name API Support
-// @contact.url http://www.example.com/support
-// @contact.email support@example.com
+//	@contact.name	API Support
+//	@contact.url	http://www.example.com/support
+//	@contact.email	support@example.com
 
-// @license.name MIT
-// @license.url https://opensource.org/licenses/MIT
+//	@license.name	MIT
+//	@license.url	https://opensource.org/licenses/MIT
 
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
-// @description Type "Bearer" followed by a space and JWT token.
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
+// @description				Type "Bearer" followed by a space and JWT token.
 package main
 
 import (

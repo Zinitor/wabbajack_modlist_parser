@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -48,10 +48,10 @@ type (
 
 // NewConfig returns app config.
 func NewConfig() (*Config, error) {
-	//TODO perhaps remove from here?
+	// TODO perhaps remove from here?
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file", err)
+		slog.Error("Error loading .env file", err)
 	}
 
 	cfg := &Config{}

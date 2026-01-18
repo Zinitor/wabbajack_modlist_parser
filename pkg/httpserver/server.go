@@ -70,7 +70,7 @@ func New(l logger.Interface, opts ...Option) *Server {
 	return s
 }
 
-// Router returns the Chi router for registering routes
+// Router returns the Chi router for registering routes.
 func (s *Server) Router() chi.Router {
 	return s.router
 }

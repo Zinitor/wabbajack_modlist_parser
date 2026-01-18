@@ -24,7 +24,7 @@ func loadTestData(t testing.TB, filePath string) []byte {
 }
 
 func TestParseToModlistArchiveMap(t *testing.T) {
-	//чисто технически мне не обязательно даже парсить в структуру мне достаточно чтобы у меня вернулась инфа о количестве модов
+	// чисто технически мне не обязательно даже парсить в структуру мне достаточно чтобы у меня вернулась инфа о количестве модов
 	// следовательно можно просто возвращать map
 	data := loadTestData(t, "json_examples/mod_archive_example.json")
 	reader := bytes.NewReader(data)

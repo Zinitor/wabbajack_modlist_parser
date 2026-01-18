@@ -9,7 +9,7 @@ import (
 	"slices"
 	"sort"
 	"sync"
-	"wabbajackModlistParser/internal/service/parser/structs"
+	"wabbajackModlistParser/internal/services/parser/structs"
 )
 
 // Refactoring plan
@@ -152,7 +152,6 @@ func MainParse(gameNames []string) {
 				allModlistsMap[modName] += quantity
 			}
 		}
-
 	}
 	_ = GetTopPopularMods(allModlistsMap, 100)
 }

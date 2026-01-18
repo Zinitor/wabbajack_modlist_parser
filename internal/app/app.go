@@ -13,7 +13,6 @@ import (
 )
 
 func Run(cfg *config.Config) {
-
 	l := logger.New(cfg.Log.Level)
 
 	srv := httpserver.New(l,
@@ -48,5 +47,4 @@ func Run(cfg *config.Config) {
 	if err := srv.Shutdown(); err != nil {
 		l.Error("Error during server shutdown: %v", err)
 	}
-
 }

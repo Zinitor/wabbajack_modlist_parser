@@ -56,7 +56,10 @@ func TestCreateUrlLinksForApiCall(t *testing.T) {
 // }
 
 func TestParseJsonToModlistInfo(t *testing.T) {
-	modlistInfo := parser.ParseJSONFromAPIUrl("https://raw.githubusercontent.com/tpartridge89/ElderTeej/main/modlists.json", structs.ParseToModlistInfo)
+	modlistInfo := parser.ParseJSONFromAPIUrl(
+		"https://raw.githubusercontent.com/tpartridge89/ElderTeej/main/modlists.json",
+		structs.ParseToModlistInfo,
+	)
 	assert.NotEmpty(t, modlistInfo)
 }
 

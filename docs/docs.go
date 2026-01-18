@@ -50,6 +50,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/modlists": {
+            "get": {
+                "description": "Retrieve a list of all available modlists with their details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "modlists"
+                ],
+                "summary": "Get all modlists",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/v1.ModlistSummaryResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/status": {
             "get": {
                 "description": "Get API version and status",
@@ -73,6 +108,19 @@ const docTemplate = `{
                             }
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "v1.ModlistSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "Name": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
                 }
             }
         }

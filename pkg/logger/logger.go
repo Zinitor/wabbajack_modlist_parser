@@ -24,7 +24,6 @@ type Logger struct {
 var _ Interface = (*Logger)(nil)
 
 func New(level string) *Logger {
-
 	var l slog.Level
 
 	switch strings.ToLower(level) {
@@ -68,7 +67,6 @@ func New(level string) *Logger {
 	return &Logger{
 		logger: logger,
 	}
-
 }
 
 // Fatal logs a fatal message.
