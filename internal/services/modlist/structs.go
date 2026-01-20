@@ -14,3 +14,13 @@ type GameModlist struct {
 	GameName string
 	Modlists []string
 }
+
+type ModlistData struct {
+	Title string `json:"title"`
+	Game  string `json:"game"`
+}
+
+type GamePopularity struct {
+	Name       string
+	Popularity int
+}

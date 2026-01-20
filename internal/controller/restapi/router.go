@@ -42,9 +42,9 @@ func NewRouter(router chi.Router, cfg *config.Config, l logger.Interface, v1Hand
 	})
 
 	if cfg.Swagger.Enabled {
-		router.Get("/swagger/*", httpSwagger.Handler(
-			httpSwagger.URL("/swagger/doc.json"),
+		router.Get("/api/v1/docs/*", httpSwagger.Handler(
+			httpSwagger.URL("api/v1/docs/swagger/doc.json"),
 		))
-		l.Info("Swagger UI enabled at /swagger/")
+		l.Info("Swagger UI enabled at /api/v1/docs/swagger/doc.json")
 	}
 }

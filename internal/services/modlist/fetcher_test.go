@@ -89,7 +89,6 @@ func TestFetchAndParse(t *testing.T) {
 		}
 		item, err := fetchAndParse[Summary](testCtx, client, testUri)
 		require.Error(t, err)
-		// Check it's not an HTTPError
 		var httpErr *HTTPError
 		assert.NotErrorAs(t, err, &httpErr, "Expected network error, not HTTP error")
 		assert.Equal(t, Summary{}, item)

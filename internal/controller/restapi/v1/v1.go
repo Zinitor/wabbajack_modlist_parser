@@ -33,6 +33,7 @@ func RegisterRoutes(r chi.Router, h *V1) {
 	r.Get("/modlists", h.getModlists)
 	r.Get("/repositories", h.getRepos)
 	r.Get("/games", h.getAllGames)
+	r.Get("/games/top-popular", h.getTopPopularByModlistsCount)
 }
 
 // Health check endpoint
@@ -128,6 +129,36 @@ func (h *V1) getRepos(w http.ResponseWriter, _ *http.Request) {
 //	@Router			/api/v1/games [get]
 func (h *V1) getAllGames(w http.ResponseWriter, _ *http.Request) {
 	modlists, err := h.service.GetAllGamesFromModlists(context.TODO())
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("service failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err = json.NewEncoder(w).Encode(modlists); err != nil {
+		http.Error(w, fmt.Sprintf("JSON encode failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+// Get top popular games by modpack count
+//
+//	@Summary		Get top popular games
+//	@Description	Retrieves a list of games ranked by popularity based on the number of modpacks/modlists available for each game. The popularity score is determined by counting how many modpacks reference each game across all repositories.
+//	@Tags			games
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int				false	"Number of top games to return (default: 10, max: 100)"
+//	@Param			sort	query		string			false	"Sort order: 'asc' for ascending (least popular first), 'desc' for descending (most popular first) (default: 'desc')"
+//	@Success		200		{array}		GamePopularity	"List of games with their popularity scores"
+//	@Failure		400		{object}	ErrorResponse	"Invalid request parameters"
+//	@Failure		500		{object}	ErrorResponse	"Internal server error"
+//	@Failure		502		{object}	ErrorResponse	"Service temporarily unavailable"
+//	@Router			/api/v1/games/top-popular [get]
+//	@Example		curl -X GET "https://api.example.com/api/v1/games/top-popular?limit=5&sort=desc"
+func (h *V1) getTopPopularByModlistsCount(w http.ResponseWriter, r *http.Request) {
+	modlists, err := h.service.GetTopPopularGames(context.TODO(), 10, "desc")
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("service failed: %v", err), http.StatusInternalServerError)

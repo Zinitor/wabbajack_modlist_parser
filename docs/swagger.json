@@ -51,6 +51,64 @@
                 }
             }
         },
+        "/api/v1/games/top-popular": {
+            "get": {
+                "description": "Retrieves a list of games ranked by popularity based on the number of modpacks/modlists available for each game. The popularity score is determined by counting how many modpacks reference each game across all repositories.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "games"
+                ],
+                "summary": "Get top popular games",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of top games to return (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order: 'asc' for ascending (least popular first), 'desc' for descending (most popular first) (default: 'desc')",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of games with their popularity scores",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/v1.GamePopularity"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request parameters",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Service temporarily unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/v1.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/health": {
             "get": {
                 "description": "Check if the API is running",
@@ -175,6 +233,31 @@
         }
     },
     "definitions": {
+        "v1.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.GamePopularity": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "popularity": {
+                    "type": "integer"
+                }
+            }
+        },
         "v1.ModlistSummaryResponse": {
             "type": "object",
             "properties": {
