@@ -1,4 +1,4 @@
-package modlist
+package rest
 
 import (
 	"context"
@@ -15,7 +15,7 @@ func (e *HTTPError) Error() string {
 	return fmt.Sprintf("HTTP request failed with status: %d", e.Code)
 }
 
-func fetchAndParse[T any](ctx context.Context, client *http.Client, uri string) (T, error) {
+func Get[T any](ctx context.Context, client *http.Client, uri string) (T, error) {
 	var data T
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
 	if err != nil {

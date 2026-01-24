@@ -103,7 +103,7 @@ func (h *V1) getModlists(w http.ResponseWriter, _ *http.Request) {
 //	@Failure		500	{object}	map[string]string	"Internal server error"
 //	@Router			/api/v1/repositories [get]
 func (h *V1) getRepos(w http.ResponseWriter, _ *http.Request) {
-	modlists, err := h.service.GetUserRepos(context.TODO())
+	repos, err := h.service.GetUserRepos(context.TODO())
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("service failed: %v", err), http.StatusInternalServerError)
@@ -111,7 +111,7 @@ func (h *V1) getRepos(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(modlists); err != nil {
+	if err = json.NewEncoder(w).Encode(repos); err != nil {
 		http.Error(w, fmt.Sprintf("JSON encode failed: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -157,7 +157,7 @@ func (h *V1) getAllGames(w http.ResponseWriter, _ *http.Request) {
 //	@Failure		502		{object}	ErrorResponse	"Service temporarily unavailable"
 //	@Router			/api/v1/games/top-popular [get]
 //	@Example		curl -X GET "https://api.example.com/api/v1/games/top-popular?limit=5&sort=desc"
-func (h *V1) getTopPopularByModlistsCount(w http.ResponseWriter, r *http.Request) {
+func (h *V1) getTopPopularByModlistsCount(w http.ResponseWriter, _ *http.Request) {
 	modlists, err := h.service.GetTopPopularGames(context.TODO(), 10, "desc")
 
 	if err != nil {

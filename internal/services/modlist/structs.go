@@ -6,8 +6,8 @@ type Summary struct {
 }
 
 type Repository struct {
-	Name string
-	Link string
+	Name string `json:"name"`
+	Link string `json:"link"`
 }
 
 type GameModlist struct {
@@ -15,12 +15,12 @@ type GameModlist struct {
 	Modlists []string
 }
 
-type ModlistData struct {
+type Data struct {
 	Title string `json:"title"`
 	Game  string `json:"game"`
 }
 
 type GamePopularity struct {
-	Name       string
-	Popularity int
+	Name       string `json:"name"`
+	Popularity int    `json:"popularity"`
 }

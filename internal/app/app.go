@@ -23,14 +23,14 @@ func Run(cfg *config.Config) {
 		httpserver.ReadTimeout(10*time.Second),
 		httpserver.WriteTimeout(10*time.Second),
 	)
-	var DefaultTimeout time.Duration = 30 * time.Second
-	//shared client for services
-	httpClient := &http.Client{Timeout: DefaultTimeout}
+	var defaultTimeout = 30 * time.Second
+	// shared client for services
+	httpClient := &http.Client{Timeout: defaultTimeout}
 
-	//service definition
+	// service definition
 	modlistService := modlist.NewModlistService(l, httpClient)
 
-	//handlers definition
+	// handlers definition
 	v1Handler := v1.NewV1(l, &modlistService)
 
 	router := srv.Router()

@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"wabbajackModlistParser/internal/adapters/rest"
 	"wabbajackModlistParser/pkg/logger"
 
 	"golang.org/x/sync/errgroup"
@@ -22,10 +23,10 @@ func NewModlistService(logger logger.Interface, client *http.Client) Service {
 }
 
 func (s *Service) GetModlistSummary(ctx context.Context) ([]Summary, error) {
-	modlists := make([]Summary, 0)
+	var modlists []Summary
 	uri := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/reports/modListSummary.json"
 
-	modlists, err := fetchAndParse[[]Summary](ctx, s.client, uri)
+	modlists, err := rest.Get[[]Summary](ctx, s.client, uri)
 	if err != nil {
 		return modlists, err
 	}
@@ -34,11 +35,11 @@ func (s *Service) GetModlistSummary(ctx context.Context) ([]Summary, error) {
 }
 
 func (s *Service) GetUserRepos(ctx context.Context) ([]Repository, error) {
-	repositories := make([]Repository, 0)
+	var repositories []Repository
 
 	uri := "https://raw.githubusercontent.com/wabbajack-tools/mod-lists/master/repositories.json"
 
-	repoMaps, err := fetchAndParse[map[string]string](ctx, s.client, uri)
+	repoMaps, err := rest.Get[map[string]string](ctx, s.client, uri)
 	if err != nil {
 		return repositories, err
 	}
@@ -56,16 +57,6 @@ func (s *Service) GetUserRepos(ctx context.Context) ([]Repository, error) {
 	return repositories, nil
 }
 
-// should move to other layer cause can be used anywhere
-type Semaphore chan struct{}
-
-func (s Semaphore) Acquire() {
-	s <- struct{}{}
-}
-func (s Semaphore) Release() {
-	<-s
-}
-
 func (s *Service) GetAllGamesFromModlists(ctx context.Context) ([]string, error) {
 	gameSet := make(map[string]struct{})
 	var mu sync.Mutex //for map
@@ -79,11 +70,10 @@ func (s *Service) GetAllGamesFromModlists(ctx context.Context) ([]string, error)
 	g.SetLimit(6)
 
 	for _, repo := range repos {
-		repo := repo
 		g.Go(func() error {
-			modlistData, err := fetchAndParse[[]ModlistData](ctx, s.client, repo.Link)
-			if err != nil {
-				return fmt.Errorf("failed to fetch modlists from %s:%w", repo.Link, err)
+			modlistData, fErr := rest.Get[[]Data](ctx, s.client, repo.Link)
+			if fErr != nil {
+				return fmt.Errorf("failed to fetch modlists from %s:%w", repo.Link, fErr)
 			}
 			mu.Lock()
 			for _, item := range modlistData {
@@ -94,15 +84,15 @@ func (s *Service) GetAllGamesFromModlists(ctx context.Context) ([]string, error)
 		})
 	}
 
-	if err := g.Wait(); err != nil {
+	if err = g.Wait(); err != nil {
 		return nil, err
 	}
 
 	result := make([]string, 0, len(gameSet))
-	for k, _ := range gameSet {
+	for k := range gameSet {
 		result = append(result, k)
 	}
-	//could probably optimize this bit
+	// could probably optimize this bit
 	sort.Strings(result)
 	return result, nil
 }
@@ -117,10 +107,10 @@ func (s *Service) GetTopPopularGames(ctx context.Context, gamesCount int, sortOr
 	}
 	g, ctx := errgroup.WithContext(ctx)
 	g.SetLimit(6)
+
 	for _, repo := range repos {
-		repo := repo
 		g.Go(func() error {
-			modlistData, err := fetchAndParse[[]ModlistData](ctx, s.client, repo.Link)
+			modlistData, err := rest.Get[[]Data](ctx, s.client, repo.Link)
 			if err != nil {
 				s.l.Error("failed to fetch modlists from %s:%w", repo.Link, err)
 				return nil
@@ -134,7 +124,7 @@ func (s *Service) GetTopPopularGames(ctx context.Context, gamesCount int, sortOr
 		})
 	}
 
-	if err := g.Wait(); err != nil {
+	if err = g.Wait(); err != nil {
 		return nil, err
 	}
 
@@ -145,7 +135,6 @@ func (s *Service) GetTopPopularGames(ctx context.Context, gamesCount int, sortOr
 			Popularity: value,
 		}
 		resultSlice = append(resultSlice, item)
-
 	}
 
 	switch strings.ToLower(sortOrder) {
@@ -172,7 +161,6 @@ func (s *Service) GetTopPopularGames(ctx context.Context, gamesCount int, sortOr
 	}
 
 	return resultSlice, nil
-
 }
 
 func CreateURLLinkForAPICall(archiveListPostfix string) string {

@@ -46,7 +46,7 @@ func New(level string) *Logger {
 		// Add source information (file and line)
 		AddSource: true,
 		// Replace default attributes
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 			// Remove the "time" prefix from timestamp to match zerolog format
 			if a.Key == slog.TimeKey {
 				return slog.Attr{Key: "timestamp", Value: a.Value}
